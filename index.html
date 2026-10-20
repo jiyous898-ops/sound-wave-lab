@@ -1,4 +1,3 @@
-[index.html](https://github.com/user-attachments/files/33700799/index.html)
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -43,27 +42,27 @@ canvas{display:block;width:100%;height:340px}
 button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #739bef;outline-offset:2px}
 @media(max-width:700px){body{padding:10px}h1{font-size:25px}.panel{padding:13px;margin:11px 0}.toolbar{gap:9px}.toolbar>button{flex:1 1 135px}#name{width:100%;flex:1 1 180px}.chart canvas{height:300px}.trace{width:100%}}
 @media(orientation:landscape) and (max-height:650px){.chart canvas{height:240px}}
-.choice{display:flex;gap:5px;flex-wrap:wrap}.choice button{min-height:46px;padding:9px 15px}.choice button[aria-pressed="true"]{background:#285fe7;color:white;border-color:#285fe7}.setting{display:flex;align-items:center;flex-wrap:wrap;gap:10px;margin-top:12px}.setting strong{min-width:45px;display:inline-block}.setting input[type=range]{width:min(230px,48vw);accent-color:#285fe7;height:36px}.reading{font-size:14px;font-weight:600;color:#285075}.meter{height:10px;background:#e7edf5;border-radius:10px;overflow:hidden;max-width:240px;flex:1;min-width:110px}.meter>div{height:100%;width:0%;background:#26a998;transition:width .15s}.freeze{background:#d9f0ed!important;border-color:#64b9ab!important}.secondary-note{background:#fff8e8;padding:10px 12px;border-radius:10px;font-size:13px;color:#70571a}
+.choice{display:flex;gap:5px;flex-wrap:wrap}.choice button{min-height:46px;padding:9px 15px}.choice button[aria-pressed="true"]{background:#285fe7;color:white;border-color:#285fe7}.setting{display:flex;align-items:center;flex-wrap:wrap;gap:10px;margin-top:12px}.setting strong{min-width:45px;display:inline-block}.setting input[type=range]{width:min(230px,48vw);accent-color:#285fe7;height:36px}.reading{font-size:14px;font-weight:600;color:#285075}.meter{height:10px;background:#e7edf5;border-radius:10px;overflow:hidden;max-width:240px;flex:1;min-width:110px}.meter>div{height:100%;width:0%;background:#26a998;transition:width .15s}.freeze{background:#d9f0ed!important;border-color:#64b9ab!important}.heading-line{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}.signature{font-size:12px;color:#718096;font-weight:500;white-space:normal}.secondary-note{background:#fff8e8;padding:10px 12px;border-radius:10px;font-size:13px;color:#70571a}
 </style>
 </head>
 <body>
 <main>
 <header>
-  <h1>🎵 소리 파형 연구실</h1>
+  <div class="heading-line"><h1>🎵 소리 파형 연구실</h1><span class="signature">made by. Design(Math) Teacher 유선</span></div>
   <p>악기의 소리를 실시간으로 관찰하고, 색을 달리해 여러 파형을 겹쳐 비교해 보세요.</p>
 </header>
 
 <section class="panel">
-  <div class="hint">① 마이크 시작 → ② 악기 연주 → ③ 캡처 색상 선택 → ④ 파형 캡처 → ⑤ 다른 소리와 비교</div>
+  <div class="hint">① 마이크 시작 → ② 시간축 선택 → ③ 화면 진폭 확대 조절 → ④ 악기 연주 → ⑤ 파형 캡처 → ⑥ 그래프 저장 or 다른 악기 연주 파형 캡처 반복</div>
   <div class="toolbar" style="margin-top:12px">
     <button id="start" class="primary">🎤 마이크 시작</button>
     <button id="stop" disabled>■ 마이크 중지</button>
     <label>시간축</label><div class="choice" id="durations"><button type="button" data-ms="10" aria-pressed="false">10ms</button><button type="button" data-ms="20" aria-pressed="true">20ms</button><button type="button" data-ms="40" aria-pressed="false">40ms</button></div>
   </div>
-  <div class="setting"><label for="gain">화면 진폭 감도</label><input type="range" id="gain" min="1" max="20" value="1" step="1"><strong id="gainValue">1배</strong><span class="small">태블릿에서 파형이 작으면 3~10배부터 조절</span></div>
+  <div class="setting"><label for="gain">화면 진폭 확대</label><input type="range" id="gain" min="1" max="20" value="1" step="1"><strong id="gainValue">1배</strong><span class="small">태블릿에서 파형이 작으면 3~10배부터 조절</span></div>
   <div class="setting"><label for="speed">파형 화면 갱신</label><select id="speed"><option value="100">빠르게 (0.1초)</option><option value="400" selected>보통 (0.4초)</option><option value="1000">천천히 (1초)</option><option value="2000">매우 천천히 (2초)</option></select><button id="freeze" disabled>⏸ 화면 일시정지</button><span class="small">일시정지한 파형을 그대로 캡처할 수 있어요.</span></div>
   <div class="setting"><span class="reading" id="level">입력 진폭(최대): 0.000</span><div class="meter"><div id="meterBar"></div></div></div>
-  <p class="secondary-note">감도는 화면의 파형을 확대하는 기능이며 태블릿 마이크 자체의 녹음 감도를 바꾸지는 않습니다. 1보다 크게 설정하면 진폭의 원본 값과 화면 표시값이 다릅니다.</p>
+  <p class="secondary-note">화면 진폭 확대는 파형을 화면에서 크게 보여 주는 기능이며 태블릿 마이크 자체의 녹음 감도를 바꾸지는 않습니다. 1보다 크게 설정하면 진폭의 원본 값과 화면 표시값이 다릅니다.</p>
   <div id="status" class="status" role="status"><span class="dot" id="dot"></span>마이크 시작 버튼을 누르고 크롬에서 마이크 사용을 허용하세요.</div>
 </section>
 
@@ -82,13 +81,6 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
   <div class="legend" id="legend"><span class="small">저장된 파형이 아직 없습니다.</span></div>
 </section>
 
-<section class="panel">
-  <strong>🧪 수업 실험 예시</strong>
-  <p class="tip">① 같은 악기의 낮은음과 높은음을 각각 캡처 → 같은 시간축에서 진동 횟수 비교<br>
-  ② 같은 음을 약하게/세게 연주해 캡처 → 파동의 진폭 비교<br>
-  ③ 서로 다른 악기로 같은 음을 연주해 캡처 → 파형 모양 비교</p>
-  <p class="tip note">관찰 팁: 짧은 시간축 화면에서는 소리의 미세한 파동 모양과 진동 횟수를 비교하기 좋습니다. 다만 마이크 입력의 시작 지점에 따라 파형의 위치가 조금씩 달라질 수 있습니다. 세로축은 -1~+1 범위로 표시하며, 눈금은 0.5 간격으로 나타냅니다.</p>
-</section>
 </main>
 
 <script>
@@ -440,19 +432,17 @@ document.getElementById('clear').onclick = () => {
 
 document.getElementById('save').onclick = () => {
   render();
-  canvas.toBlob(async blob => {
-    if(!blob) return;
-    const file = new File([blob], '소리_파형_비교.png', {type:'image/png'});
-    if(navigator.canShare?.({files:[file]})){
-      try{ await navigator.share({files:[file], title:'소리 파형 비교'}); return; }
-      catch(e){ if(e.name === 'AbortError') return; }
-    }
+  canvas.toBlob(blob => {
+    if(!blob){ alert('이미지를 만드는 데 실패했습니다. 다시 시도해 주세요.'); return; }
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.download = file.name;
+    a.download = '소리_파형_비교_' + new Date().toISOString().replace(/[:.]/g,'-') + '.png';
     a.href = url;
+    document.body.appendChild(a);
     a.click();
-    setTimeout(() => URL.revokeObjectURL(url), 3000);
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 30000);
+    setStatus(' PNG 이미지 다운로드를 요청했습니다. 태블릿의 다운로드 폴더에서 확인해 주세요.', running);
   }, 'image/png');
 };
 
