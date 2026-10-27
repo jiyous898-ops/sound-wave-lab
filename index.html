@@ -26,8 +26,9 @@ input[type=color]{width:54px;height:50px;padding:2px;border:1px solid #d5dfed;ba
 input[type=checkbox]{width:22px;height:22px;vertical-align:middle;cursor:pointer;accent-color:#285fe7}
 input[type=text]{padding:10px;border:1px solid #d5dfed;border-radius:9px;background:white}
 #name{width:156px}
-.chart{background:#ffffff;border-radius:14px;overflow:hidden;position:relative}
-canvas{display:block;width:100%;height:340px}
+.chart-shell{position:relative}.axis-fixed{position:absolute;left:0;top:0;z-index:3;pointer-events:none;background:#fff;border-right:1px solid #dbe2eb}.chart-scroll{overflow-x:auto;overflow-y:hidden;border-radius:14px;border:1px solid #e2e8f0;-webkit-overflow-scrolling:touch;background:#fff}
+.chart{background:#ffffff;border-radius:14px;position:relative;min-width:100%}
+canvas{display:block;height:340px}
 .status{padding:7px 0;font-size:14px;color:#435571;min-height:32px;line-height:1.6}
 .dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:#9ca8b7;margin-right:5px}.dot.on{background:#25b986}
 .legend{display:flex;flex-wrap:wrap;gap:10px;margin:14px 0 0}
@@ -36,13 +37,14 @@ canvas{display:block;width:100%;height:340px}
 .trace button{min-height:44px;font-size:14px;padding:8px 12px}
 .trace input[type=color]{height:44px;width:48px}
 .small{font-size:13px}
-.tip{font-size:13px;line-height:1.7}
-.note{border-left:3px solid #4774e9;padding-left:12px}
 .hint{background:#eef5ff;border-radius:12px;padding:12px 14px;color:#25456d;font-size:14px;line-height:1.6}
 button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #739bef;outline-offset:2px}
-@media(max-width:700px){body{padding:10px}h1{font-size:25px}.panel{padding:13px;margin:11px 0}.toolbar{gap:9px}.toolbar>button{flex:1 1 135px}#name{width:100%;flex:1 1 180px}.chart canvas{height:300px}.trace{width:100%}}
-@media(orientation:landscape) and (max-height:650px){.chart canvas{height:240px}}
-.choice{display:flex;gap:5px;flex-wrap:wrap}.choice button{min-height:46px;padding:9px 15px}.choice button[aria-pressed="true"]{background:#285fe7;color:white;border-color:#285fe7}.setting{display:flex;align-items:center;flex-wrap:wrap;gap:10px;margin-top:12px}.setting strong{min-width:45px;display:inline-block}.setting input[type=range]{width:min(230px,48vw);accent-color:#285fe7;height:36px}.reading{font-size:14px;font-weight:600;color:#285075}.meter{height:10px;background:#e7edf5;border-radius:10px;overflow:hidden;max-width:240px;flex:1;min-width:110px}.meter>div{height:100%;width:0%;background:#26a998;transition:width .15s}.freeze{background:#d9f0ed!important;border-color:#64b9ab!important}.heading-line{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}.signature{font-size:12px;color:#718096;font-weight:500;white-space:normal}.secondary-note{background:#fff8e8;padding:10px 12px;border-radius:10px;font-size:13px;color:#70571a}
+.choice{display:flex;gap:5px;flex-wrap:wrap}.choice button{min-height:46px;padding:9px 15px}.choice button[aria-pressed="true"]{background:#285fe7;color:white;border-color:#285fe7}
+.setting{display:flex;align-items:center;flex-wrap:wrap;gap:10px;margin-top:12px}.setting strong{min-width:45px;display:inline-block}.setting input[type=range]{width:min(230px,48vw);accent-color:#285fe7;height:36px}
+.reading{font-size:14px;font-weight:600;color:#285075}.meter{height:10px;background:#e7edf5;border-radius:10px;overflow:hidden;max-width:240px;flex:1;min-width:110px}.meter>div{height:100%;width:0%;background:#26a998;transition:width .15s}
+.freeze{background:#d9f0ed!important;border-color:#64b9ab!important}.heading-line{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}.signature{font-size:12px;color:#718096;font-weight:500;white-space:normal}.secondary-note{background:#fff8e8;padding:10px 12px;border-radius:10px;font-size:13px;color:#70571a}
+@media(max-width:700px){body{padding:10px}h1{font-size:25px}.panel{padding:13px;margin:11px 0}.toolbar{gap:9px}.toolbar>button{flex:1 1 135px}#name{width:100%;flex:1 1 180px}.trace{width:100%}canvas{height:300px}}
+@media(orientation:landscape) and (max-height:650px){canvas{height:240px}}
 </style>
 </head>
 <body>
@@ -57,17 +59,23 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
   <div class="toolbar" style="margin-top:12px">
     <button id="start" class="primary">🎤 마이크 시작</button>
     <button id="stop" disabled>■ 마이크 중지</button>
-    <label>시간축</label><div class="choice" id="durations"><button type="button" data-ms="10" aria-pressed="false">10ms</button><button type="button" data-ms="20" aria-pressed="true">20ms</button><button type="button" data-ms="40" aria-pressed="false">40ms</button><button type="button" data-ms="60000" aria-pressed="false">1분</button></div>
+    <label>시간축</label>
+    <div class="choice" id="durations">
+      <button type="button" data-ms="10" aria-pressed="false">10ms</button>
+      <button type="button" data-ms="20" aria-pressed="true">20ms</button>
+      <button type="button" data-ms="40" aria-pressed="false">40ms</button>
+      <button type="button" data-ms="20000" aria-pressed="false">20초</button>
+    </div>
   </div>
   <div class="setting"><label for="gain">화면 진폭 확대</label><input type="range" id="gain" min="1" max="20" value="1" step="1"><strong id="gainValue">1배</strong><span class="small">태블릿에서 파형이 작으면 3~10배부터 조절</span></div>
   <div class="setting"><label for="speed">파형 화면 갱신</label><select id="speed"><option value="100">빠르게 (0.1초)</option><option value="400" selected>보통 (0.4초)</option><option value="1000">천천히 (1초)</option><option value="2000">매우 천천히 (2초)</option></select><button id="freeze" disabled>⏸ 화면 일시정지</button><span class="small">일시정지한 파형을 그대로 캡처할 수 있어요.</span></div>
   <div class="setting"><span class="reading" id="level">입력 진폭(최대): 0.000</span><div class="meter"><div id="meterBar"></div></div></div>
-  <p class="secondary-note">화면 진폭 확대는 파형을 화면에서 크게 보여 주는 기능이며 태블릿 마이크 자체의 녹음 감도를 바꾸지는 않습니다. 1보다 크게 설정하면 진폭의 원본 값과 화면 표시값이 다릅니다.</p>
+  <p class="secondary-note">화면 진폭 확대는 파형을 화면에서 크게 보여 주는 기능이며 태블릿 마이크 자체의 녹음 감도를 바꾸지는 않습니다. 20초 모드는 1초씩 20칸으로 이어진 긴 그래프입니다. 10ms 구간마다 측정한 최대·최소 진폭 중 크기가 더 큰 값을 부호와 함께 하나의 선으로 표시하며, 좌우로 스크롤할 수 있습니다.</p>
   <div id="status" class="status" role="status"><span class="dot" id="dot"></span>마이크 시작 버튼을 누르고 크롬에서 마이크 사용을 허용하세요.</div>
 </section>
 
 <section class="panel">
-  <div class="chart"><canvas id="scope" aria-label="시간에 따른 소리 진폭 파형 그래프"></canvas></div>
+  <div class="chart-shell"><div class="chart-scroll" id="chartScroll"><div class="chart"><canvas id="scope" aria-label="시간에 따른 소리 진폭 파형 그래프"></canvas></div></div><canvas class="axis-fixed" id="axisFixed" aria-label="고정된 진폭 눈금" style="display:none"></canvas></div>
   <p class="small">가로축: 시간 <span id="durationText">0~20ms</span> · 세로축: 진폭 -1~+1 (0.5 간격 눈금) · 시간축을 변경해도 저장한 파형이 유지됩니다</p>
   <div class="toolbar" style="margin-top:15px">
     <label for="name">소리 이름</label>
@@ -85,6 +93,9 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
 
 <script>
 const canvas = document.getElementById('scope');
+const chartScroll = document.getElementById('chartScroll');
+const axisFixed = document.getElementById('axisFixed');
+const axisCtx = axisFixed.getContext('2d');
 const ctx = canvas.getContext('2d');
 const startBtn = document.getElementById('start');
 const stopBtn = document.getElementById('stop');
@@ -92,67 +103,111 @@ const capBtn = document.getElementById('capture');
 const legend = document.getElementById('legend');
 const stat = document.getElementById('status');
 const dot = document.getElementById('dot');
-// 실시간 파형은 마이크 실행 중 항상 표시합니다. 일시정지·PNG 저장에서는 숨깁니다.
 const colorInput = document.getElementById('color');
 const nameInput = document.getElementById('name');
+const gainInput = document.getElementById('gain');
+const speedSelect = document.getElementById('speed');
+const freezeBtn = document.getElementById('freeze');
+const durationText = document.getElementById('durationText');
+const meterBar = document.getElementById('meterBar');
+const levelEl = document.getElementById('level');
 
 let windowMs = 20;
 let displayGain = 1;
 let refreshMs = 400;
-let frozen = false, displayed = null, lastRefresh = 0;
-const MAX_WINDOW_MS = 40;
-// 1분 모드는 원본 오디오 대신 10ms마다 최소/최대 진폭을 보관합니다.
-// 크롬북과 태블릿에서 60초 동안 메모리를 과도하게 사용하지 않습니다.
-const LONG_BUCKET_MS = 10, LONG_BUCKET_COUNT = 6000;
-let longMin = new Float32Array(LONG_BUCKET_COUNT), longMax = new Float32Array(LONG_BUCKET_COUNT);
-let longHead=0,longUsed=0,longN=0,longLo=1,longHi=-1,longBucketSamples=480;
-let longStartedAt=0;
+let frozen = false;
+let displayed = null;
+let lastRefresh = 0;
+
+const SHORT_MAX_MS = 40;
+const LONG_TOTAL_MS = 20000;
+const LONG_BUCKET_MS = 10;
+const LONG_BUCKET_COUNT = LONG_TOTAL_MS / LONG_BUCKET_MS; // 6000
+const LONG_SEGMENT_WIDTH = 220; // 1초당 약 220px
 const palette = ['#ff8c42','#2cc7bd','#f05aa8','#a987ff','#f4cb48','#54a9ff'];
+
 let sampleRate = 48000;
-let WINDOW_SAMPLES = Math.round(sampleRate * MAX_WINDOW_MS / 1000);
-let ring = new Float32Array(WINDOW_SAMPLES);
-let writeIndex = 0;
-let filled = 0;
+let SHORT_MAX_SAMPLES = Math.round(sampleRate * SHORT_MAX_MS / 1000);
+let shortRing = new Float32Array(SHORT_MAX_SAMPLES);
+let shortWrite = 0;
+let shortFilled = 0;
+
+let longMin = new Float32Array(LONG_BUCKET_COUNT);
+let longMax = new Float32Array(LONG_BUCKET_COUNT);
+let longHead = 0;
+let longUsed = 0;
+let longCount = 0;
+let longLow = 1;
+let longHigh = -1;
+
 let ac, stream, source, workerNode, fallbackNode, silentGain, raf = 0;
 let running = false, starting = false;
-let frozenShort=null,frozenLong=null;
+let frozenShort = null, frozenLong = null;
 let captures = [], serial = 0;
+let drawAxesBounds = null;
 
 function setStatus(message, on=false){
   stat.lastChild.textContent = message;
   dot.classList.toggle('on', on);
 }
 
-function resetBuffer(){
-  WINDOW_SAMPLES = Math.max(1, Math.round(sampleRate * MAX_WINDOW_MS / 1000));
-  ring = new Float32Array(WINDOW_SAMPLES);
-  writeIndex = 0;
-  filled = 0;
-  longMin.fill(0);longMax.fill(0);longHead=0;longUsed=0;longN=0;longLo=1;longHi=-1;
-  longBucketSamples=Math.max(1,Math.round(sampleRate*LONG_BUCKET_MS/1000));
-  longStartedAt=performance.now();
+function resetBuffers(){
+  SHORT_MAX_SAMPLES = Math.max(1, Math.round(sampleRate * SHORT_MAX_MS / 1000));
+  shortRing = new Float32Array(SHORT_MAX_SAMPLES);
+  shortWrite = 0;
+  shortFilled = 0;
+  longMin = new Float32Array(LONG_BUCKET_COUNT);
+  longMax = new Float32Array(LONG_BUCKET_COUNT);
+  longHead = 0;
+  longUsed = 0;
+  longCount = 0;
+  longLow = 1;
+  longHigh = -1;
+}
+
+function currentCssHeight(){
+  if(window.matchMedia('(orientation: landscape) and (max-height: 650px)').matches) return 240;
+  if(window.innerWidth <= 700) return 300;
+  return 340;
 }
 
 function setSize(){
-  const rect = canvas.getBoundingClientRect();
+  const rect = chartScroll.getBoundingClientRect();
   const d = Math.min(devicePixelRatio || 1, 2);
-  canvas.width = Math.max(1, Math.round(rect.width * d));
-  canvas.height = Math.max(1, Math.round(rect.height * d));
+  const cssHeight = currentCssHeight();
+  const cssWidth = windowMs===LONG_TOTAL_MS ? Math.max(rect.width, LONG_SEGMENT_WIDTH * 20) : rect.width;
+  canvas.style.width = cssWidth + 'px';
+  canvas.style.height = cssHeight + 'px';
+  canvas.width = Math.max(1, Math.round(cssWidth * d));
+  canvas.height = Math.max(1, Math.round(cssHeight * d));
+  axisFixed.style.width = '57px';
+  axisFixed.style.height = cssHeight + 'px';
+  axisFixed.width = Math.round(57 * d);
+  axisFixed.height = Math.round(cssHeight * d);
+  axisFixed.style.display = windowMs===LONG_TOTAL_MS ? 'block' : 'none';
   render();
 }
 
 function ingest(samples){
   if(!running) return;
   for(let i=0;i<samples.length;i++){
-    ring[writeIndex] = samples[i];
-    writeIndex = (writeIndex + 1) % WINDOW_SAMPLES;
-    if(filled < WINDOW_SAMPLES) filled++;
-    longLo=Math.min(longLo,samples[i]);longHi=Math.max(longHi,samples[i]);
-    if(++longN>=longBucketSamples){
-      longMin[longHead]=longLo;longMax[longHead]=longHi;
-      longHead=(longHead+1)%LONG_BUCKET_COUNT;
-      longUsed=Math.min(longUsed+1,LONG_BUCKET_COUNT);
-      longN=0;longLo=1;longHi=-1;
+    const v = samples[i];
+    shortRing[shortWrite] = v;
+    shortWrite = (shortWrite + 1) % SHORT_MAX_SAMPLES;
+    if(shortFilled < SHORT_MAX_SAMPLES) shortFilled++;
+
+    longLow = Math.min(longLow, v);
+    longHigh = Math.max(longHigh, v);
+    longCount++;
+    const bucketSamples = Math.max(1, Math.round(sampleRate * LONG_BUCKET_MS / 1000));
+    if(longCount >= bucketSamples){
+      longMin[longHead] = longLow;
+      longMax[longHead] = longHigh;
+      longHead = (longHead + 1) % LONG_BUCKET_COUNT;
+      longUsed = Math.min(longUsed + 1, LONG_BUCKET_COUNT);
+      longCount = 0;
+      longLow = 1;
+  longHigh = -1;
     }
   }
 }
@@ -188,15 +243,14 @@ async function startMic(){
     stream = s;
     source = context.createMediaStreamSource(s);
     sampleRate = context.sampleRate || 48000;
-    resetBuffer();
+    resetBuffers();
     silentGain = context.createGain();
     silentGain.gain.value = 0;
 
     if(context.audioWorklet && typeof AudioWorkletNode !== 'undefined'){
       try{
         const u = URL.createObjectURL(new Blob([workletSource], {type:'text/javascript'}));
-        try{ await context.audioWorklet.addModule(u); }
-        finally{ URL.revokeObjectURL(u); }
+        try{ await context.audioWorklet.addModule(u); } finally { URL.revokeObjectURL(u); }
         workerNode = new AudioWorkletNode(context, 'wave-collector');
         workerNode.port.onmessage = e => ingest(e.data);
         source.connect(workerNode);
@@ -219,10 +273,17 @@ async function startMic(){
 
     silentGain.connect(context.destination);
     running = true;
+    displayed = null;
+    frozen = false;
+    frozenShort = null;
+    frozenLong = null;
+    lastRefresh = 0;
     stopBtn.disabled = false;
     capBtn.disabled = false;
-    displayed=null;frozen=false;lastRefresh=0;document.getElementById('freeze').disabled=false;document.getElementById('freeze').textContent='⏸ 화면 일시정지';document.getElementById('freeze').classList.remove('freeze');
-    setStatus(' 녹음 중 · '+(windowMs===60000?'1분':windowMs+'ms')+' 파형을 표시합니다.', true);
+    freezeBtn.disabled = false;
+    freezeBtn.textContent = '⏸ 화면 일시정지';
+    freezeBtn.classList.remove('freeze');
+    setStatus(' 녹음 중 · ' + (windowMs===LONG_TOTAL_MS ? '20초' : windowMs+'ms') + ' 파형을 표시합니다.', true);
     loop();
   }catch(e){
     s?.getTracks().forEach(t => t.stop());
@@ -248,44 +309,65 @@ function stopMic(){
   ac?.close().catch(()=>{});
   ac = null; stream = null; source = null; workerNode = null; fallbackNode = null; silentGain = null;
   startBtn.disabled = false;
-  document.getElementById('freeze').disabled=true;
   stopBtn.disabled = true;
   capBtn.disabled = true;
+  freezeBtn.disabled = true;
   setStatus(' 마이크 중지됨 · 저장된 파형은 계속 비교할 수 있습니다.');
   render();
 }
 
-function loop(timestamp=0){
-  if(!running) return;
-  if(!frozen && (!displayed || timestamp-lastRefresh>=refreshMs)){
-    displayed=windowMs===60000 ? longSnapshot() : snapshot();lastRefresh=timestamp;
-    render();
-    const max=windowMs===60000 ? Math.max(...Array.from(displayed.hi.slice(-100)).map(Math.abs),...Array.from(displayed.lo.slice(-100)).map(Math.abs)) : displayed.reduce((m,v)=>Math.max(m,Math.abs(v)),0);
-    document.getElementById('level').textContent='입력 진폭(최대): '+max.toFixed(3);
-    document.getElementById('meterBar').style.width=Math.min(100,max*100)+'%';
-  }
-  raf=requestAnimationFrame(loop);
-}
-
-function snapshot(durationMs=MAX_WINDOW_MS){
-  const count=Math.max(1,Math.round(sampleRate*durationMs/1000));
-  const out=new Float32Array(count);
-  const n=Math.min(count,filled);
+function snapshotShort(durationMs=SHORT_MAX_MS){
+  const count = Math.max(1, Math.round(sampleRate * durationMs / 1000));
+  const out = new Float32Array(count);
+  const n = Math.min(count, shortFilled);
   for(let i=0;i<n;i++){
-    out[count-n+i]=ring[(writeIndex-n+i+WINDOW_SAMPLES)%WINDOW_SAMPLES];
+    out[count-n+i] = shortRing[(shortWrite - n + i + SHORT_MAX_SAMPLES) % SHORT_MAX_SAMPLES];
   }
   return out;
 }
 
-function longSnapshot(){
-  const lo=new Float32Array(LONG_BUCKET_COUNT),hi=new Float32Array(LONG_BUCKET_COUNT);
-  const n=Math.min(longUsed,LONG_BUCKET_COUNT);
+function snapshotLong(){
+  const n = Math.min(longUsed, LONG_BUCKET_COUNT);
+  const lo = new Float32Array(n), hi = new Float32Array(n);
   for(let i=0;i<n;i++){
-    const j=(longHead-n+i+LONG_BUCKET_COUNT)%LONG_BUCKET_COUNT;
-    const at=LONG_BUCKET_COUNT-n+i;
-    lo[at]=longMin[j];hi[at]=longMax[j];
+    const idx = (longHead - n + i + LONG_BUCKET_COUNT) % LONG_BUCKET_COUNT;
+    lo[i] = longMin[idx];
+    hi[i] = longMax[idx];
   }
-  return {kind:'long',lo,hi};
+  return {kind:'long', lo, hi, used:n, total:LONG_BUCKET_COUNT};
+}
+
+function maxAbsShort(data){
+  let m = 0;
+  for(let i=0;i<data.length;i++) m = Math.max(m, Math.abs(data[i]));
+  return m;
+}
+
+function maxAbsLong(data){
+  let m = 0;
+  const start = Math.max(0, data.used - 100);
+  for(let i=start;i<data.used;i++){
+    m = Math.max(m, Math.abs(data.lo[i]), Math.abs(data.hi[i]));
+  }
+  return m;
+}
+
+function loop(timestamp=0){
+  if(!running) return;
+  if(!frozen && (!displayed || timestamp - lastRefresh >= refreshMs)){
+    displayed = windowMs===LONG_TOTAL_MS ? snapshotLong() : snapshotShort(windowMs);
+    lastRefresh = timestamp;
+    render();
+    const max = windowMs===LONG_TOTAL_MS ? maxAbsLong(displayed) : maxAbsShort(displayed);
+    levelEl.textContent = '입력 진폭(최대): ' + max.toFixed(3);
+    meterBar.style.width = Math.min(100, max * 100) + '%';
+    if(windowMs===LONG_TOTAL_MS){
+      const progress = displayed.total ? displayed.used / displayed.total : 0;
+      const target = Math.max(0, chartScroll.scrollWidth * progress - chartScroll.clientWidth * 0.5);
+      chartScroll.scrollLeft = target;
+    }
+  }
+  raf = requestAnimationFrame(loop);
 }
 
 function drawAxes(){
@@ -297,14 +379,28 @@ function drawAxes(){
   ctx.textBaseline = 'middle';
   ctx.lineWidth = d;
 
-  for(let k=0;k<=10;k++){
-    const x = l + (r-l) * k / 10;
-    ctx.beginPath();
-    ctx.strokeStyle = '#dbe2eb';
-    ctx.moveTo(x,t); ctx.lineTo(x,b); ctx.stroke();
-    ctx.textAlign = 'center';
-    ctx.fillStyle = '#26374c';
-    ctx.fillText(String(k*(windowMs===60000?6:windowMs/10)), x, h - 26*d);
+  if(windowMs===LONG_TOTAL_MS){
+    for(let sec=0; sec<=20; sec++){
+      const x = l + (r-l) * sec / 20;
+      ctx.beginPath();
+      ctx.strokeStyle = (sec % 5 === 0) ? '#ccd6e2' : '#e7edf4';
+      ctx.moveTo(x,t); ctx.lineTo(x,b); ctx.stroke();
+      if(sec < 20){
+        ctx.textAlign = 'center';
+        ctx.fillStyle = '#26374c';
+        ctx.fillText(String(sec), x, h - 26*d);
+      }
+    }
+  }else{
+    for(let k=0;k<=10;k++){
+      const x = l + (r-l) * k / 10;
+      ctx.beginPath();
+      ctx.strokeStyle = '#dbe2eb';
+      ctx.moveTo(x,t); ctx.lineTo(x,b); ctx.stroke();
+      ctx.textAlign = 'center';
+      ctx.fillStyle = '#26374c';
+      ctx.fillText(String(k * (windowMs / 10)), x, h - 26*d);
+    }
   }
 
   ctx.textAlign = 'right';
@@ -315,27 +411,21 @@ function drawAxes(){
     ctx.strokeStyle = (Math.abs(v) < 1e-9) ? '#8091a8' : '#dbe2eb';
     ctx.moveTo(l,y); ctx.lineTo(r,y); ctx.stroke();
     ctx.fillStyle = '#26374c';
-    const label = Number.isInteger(v) ? String(v) : String(v);
-    ctx.fillText(label, l - 10*d, y);
+    ctx.fillText(String(v), l - 10*d, y);
   }
 
   ctx.textAlign = 'center';
-  ctx.fillText(windowMs===60000?'시간 (초)':'시간 (ms)', (l+r)/2, h - 9*d);
+  ctx.fillText(windowMs===LONG_TOTAL_MS ? '시간 (초)' : '시간 (ms)', (l+r)/2, h - 9*d);
   ctx.save();
   ctx.translate(13*d, (t+b)/2);
   ctx.rotate(-Math.PI/2);
   ctx.fillText('진폭', 0, 0);
   ctx.restore();
-
   return {l,r,t,b};
 }
 
-function plotLine(samples, color, width=3, opacity=1){
-  if(windowMs===60000 || samples?.kind==='long')return;
+function plotShort(samples, color, width=4, opacity=1){
   if(!samples || !samples.length) return;
-  // 모든 캡처는 최대 40ms를 보유하고, 선택된 시간축만 화면에 표시한다.
-  const count=Math.max(1,Math.round(sampleRate*windowMs/1000));
-  const visible=samples.length>count ? samples.subarray(samples.length-count) : samples;
   const {l,r,t,b} = drawAxesBounds;
   const mid = (t+b)/2;
   const half = (b-t)/2;
@@ -345,9 +435,9 @@ function plotLine(samples, color, width=3, opacity=1){
   ctx.globalAlpha = opacity;
   ctx.lineWidth = width * d;
   ctx.beginPath();
-  for(let i=0;i<visible.length;i++){
-    const x = l + (r-l) * i / Math.max(1, visible.length - 1);
-    let v = visible[i] * displayGain;
+  for(let i=0;i<samples.length;i++){
+    const x = l + (r-l) * i / Math.max(1, samples.length - 1);
+    let v = samples[i] * displayGain;
     if(v > 1) v = 1;
     if(v < -1) v = -1;
     const y = mid - v * half;
@@ -357,58 +447,85 @@ function plotLine(samples, color, width=3, opacity=1){
   ctx.restore();
 }
 
-function plotLong(wave,color,width=2.2,opacity=1){
-  if(!wave || wave.kind!=='long')return;
-  const {l,r,t,b}=drawAxesBounds,d=canvas.width/Math.max(1,canvas.clientWidth),mid=(t+b)/2,half=(b-t)/2;
-  ctx.save();ctx.strokeStyle=color;ctx.globalAlpha=opacity;ctx.lineWidth=width*d;ctx.beginPath();
-  // 하나의 픽셀 열에 해당하는 min/max를 합쳐 장시간 파형을 표현합니다.
-  const columns=Math.max(1,Math.ceil((r-l)/d));
-  for(let c=0;c<columns;c++){
-    const begin=Math.floor(c*LONG_BUCKET_COUNT/columns);
-    const end=Math.max(begin+1,Math.floor((c+1)*LONG_BUCKET_COUNT/columns));
-    let lo=1,hi=-1;
-    for(let j=begin;j<end;j++){lo=Math.min(lo,wave.lo[j]);hi=Math.max(hi,wave.hi[j]);}
-    const x=l+(c+.5)*(r-l)/columns;
-    const y1=mid-Math.max(-1,Math.min(1,hi*displayGain))*half;
-    const y2=mid-Math.max(-1,Math.min(1,lo*displayGain))*half;
-    ctx.moveTo(x,y1);ctx.lineTo(x,y2);
+function plotLong(wave, color, width=4, opacity=1){
+  if(!wave || wave.kind!=='long' || !wave.used) return;
+  const {l,r,t,b}=drawAxesBounds;
+  const mid=(t+b)/2,half=(b-t)/2;
+  const d=canvas.width/Math.max(1,canvas.clientWidth);
+  const total=wave.total||LONG_BUCKET_COUNT;
+  // Each 10ms bucket gets one *signed* extreme instead of two mirrored curves.
+  // Preserve the strongest observed amplitude, without averaging positive and negative samples.
+  ctx.save();ctx.strokeStyle=color;ctx.globalAlpha=opacity;ctx.lineWidth=width*d;
+  ctx.lineJoin='round';ctx.lineCap='round';ctx.beginPath();
+  for(let i=0;i<wave.used;i++){
+    const lo=wave.lo[i], hi=wave.hi[i];
+    let v=(Math.abs(hi)>=Math.abs(lo)?hi:lo)*displayGain;
+    v=Math.max(-1,Math.min(1,v));
+    const x=l+(r-l)*i/total,y=mid-v*half;
+    if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
   }
   ctx.stroke();ctx.restore();
 }
 
-let drawAxesBounds = null;
+function drawFixedAxis(){
+  if(windowMs!==LONG_TOTAL_MS)return;
+  const d = axisFixed.width / 57;
+  const h = axisFixed.height, t=20*d, b=h-43*d;
+  axisCtx.fillStyle='#fff';
+  axisCtx.fillRect(0,0,axisFixed.width,h);
+  axisCtx.font=`${12*d}px system-ui`;
+  axisCtx.textBaseline='middle';
+  axisCtx.textAlign='right';
+  for(let i=0;i<=4;i++){
+    const v=1-i*.5, y=t+(b-t)*i/4;
+    axisCtx.strokeStyle=v===0?'#8091a8':'#dbe2eb';
+    axisCtx.beginPath();axisCtx.moveTo(44*d,y);axisCtx.lineTo(57*d,y);axisCtx.stroke();
+    axisCtx.fillStyle='#26374c';axisCtx.fillText(String(v),45*d,y);
+  }
+  axisCtx.textAlign='center';
+  axisCtx.save();axisCtx.translate(13*d,(t+b)/2);axisCtx.rotate(-Math.PI/2);
+  axisCtx.fillText('진폭',0,0);axisCtx.restore();
+}
+
 function render(includeLive=true){
   if(!canvas.width) return;
   drawAxesBounds = drawAxes();
+  drawFixedAxis();
   for(const item of captures){
-    if(item.visible && (windowMs===60000 ? item.data.kind==='long' : item.data.kind!=='long')){
-      if(windowMs===60000)plotLong(item.data,item.color,3,0.88);
-      else plotLine(item.data,item.color,4,0.9);
-    }
+    if(!item.visible) continue;
+    if(windowMs===LONG_TOTAL_MS && item.kind==='long') plotLong(item.data, item.color, 4.2, 0.9);
+    if(windowMs!==LONG_TOTAL_MS && item.kind==='short') plotShort(item.data, item.color, 4.2, 0.9);
   }
   if(includeLive && running && !frozen && displayed){
-    if(windowMs===60000) plotLong(displayed,'#1e5bd7',2.6,0.96);
-    else plotLine(displayed, '#1e5bd7', 3.5, 0.96);
+    if(windowMs===LONG_TOTAL_MS) plotLong(displayed, '#1e5bd7', 4, 0.96);
+    else plotShort(displayed, '#1e5bd7', 4, 0.96);
   }
 }
 
 function addCapture(){
-  if(!running || filled===0) return;
+  if(!running) return;
   const color = colorInput.value;
   const name = nameInput.value.trim() || '파형 ' + (++serial);
-  const captureData=windowMs===60000 ? (frozen?frozenLong:longSnapshot()) : (frozen?frozenShort:snapshot());
+  const captureData = windowMs===LONG_TOTAL_MS ? (frozen ? frozenLong : snapshotLong()) : (frozen ? frozenShort : snapshotShort(windowMs));
   captures.push({
     id: Date.now() + Math.random(),
     name,
     color,
-    data: windowMs===60000 ? {kind:'long',lo:new Float32Array(captureData.lo),hi:new Float32Array(captureData.hi)} : new Float32Array(captureData),
+    kind: windowMs===LONG_TOTAL_MS ? 'long' : 'short',
+    data: windowMs===LONG_TOTAL_MS ? {
+      kind:'long',
+      lo: new Float32Array(captureData.lo),
+      hi: new Float32Array(captureData.hi),
+      used: captureData.used,
+      total: captureData.total
+    } : new Float32Array(captureData),
     visible: true
   });
   nameInput.value = '';
   colorInput.value = palette[captures.length % palette.length];
   drawLegend();
   render();
-  setStatus(' ' + name + ' 캡처 완료 · '+(windowMs===60000?'최근 1분':windowMs+'ms')+' 파형을 저장했습니다.', true);
+  setStatus(' ' + name + ' 캡처 완료 · ' + (windowMs===LONG_TOTAL_MS ? '최근 20초' : windowMs + 'ms') + ' 파형을 저장했습니다.', true);
 }
 
 function drawLegend(){
@@ -427,7 +544,6 @@ function drawLegend(){
     const check = document.createElement('input');
     check.type = 'checkbox';
     check.checked = c.visible;
-    check.setAttribute('aria-label', c.name + ' 보기');
     check.onchange = () => { c.visible = check.checked; render(); };
 
     const sw = document.createElement('span');
@@ -435,12 +551,11 @@ function drawLegend(){
     sw.style.background = c.color;
 
     const txt = document.createElement('span');
-    txt.textContent = c.name;
+    txt.textContent = c.name + ' (' + (c.kind==='long' ? '20초' : (c.data.length ? (Math.round(c.data.length / sampleRate * 1000)) + 'ms' : '파형')) + ')';
 
     const clr = document.createElement('input');
     clr.type = 'color';
     clr.value = c.color;
-    clr.title = '저장된 파형 색 바꾸기';
     clr.oninput = () => { c.color = clr.value; sw.style.background = c.color; render(); };
 
     const del = document.createElement('button');
@@ -455,31 +570,49 @@ function drawLegend(){
 startBtn.onclick = startMic;
 stopBtn.onclick = stopMic;
 capBtn.onclick = addCapture;
-document.getElementById('gain').oninput=e=>{
-  displayGain=Number(e.target.value);
-  document.getElementById('gainValue').textContent=displayGain+'배';render();
-};
-document.getElementById('speed').onchange=e=>{refreshMs=Number(e.target.value);lastRefresh=0;};
-document.getElementById('freeze').onclick=()=>{
-  if(!running)return;
-  frozen=!frozen;
-  if(frozen){ frozenShort=snapshot(); frozenLong=longSnapshot(); }else{frozenShort=null;frozenLong=null;} 
-  const b=document.getElementById('freeze');
-  b.textContent=frozen?'▶ 실시간 재개':'⏸ 화면 일시정지';
-  b.classList.toggle('freeze',frozen);
-  if(!frozen)lastRefresh=0;
-  setStatus(frozen?' 화면 일시정지 · 지금 보이는 파형을 캡처하세요.':' 실시간 파형 관찰 중',true);
+
+gainInput.oninput = e => {
+  displayGain = Number(e.target.value);
+  document.getElementById('gainValue').textContent = displayGain + '배';
   render();
 };
-document.querySelectorAll('#durations button').forEach(b=>b.onclick=()=>{
-  const next=Number(b.dataset.ms);
-  if(next===windowMs)return;
-  windowMs=next; // 기존 캡처와 멈춘 화면 모두 그대로 유지
-  document.getElementById('durationText').textContent=next===60000?'0~60초':'0~'+next+'ms';
-  if(running){displayed=frozen ? (next===60000?frozenLong:frozenShort) : (next===60000?longSnapshot():snapshot());lastRefresh=performance.now();}
-  document.querySelectorAll('#durations button').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));
+
+speedSelect.onchange = e => {
+  refreshMs = Number(e.target.value);
+  lastRefresh = 0;
+};
+
+freezeBtn.onclick = () => {
+  if(!running) return;
+  frozen = !frozen;
+  if(frozen){
+    frozenShort = snapshotShort(windowMs===LONG_TOTAL_MS ? SHORT_MAX_MS : windowMs);
+    frozenLong = snapshotLong();
+  }else{
+    frozenShort = null;
+    frozenLong = null;
+    lastRefresh = 0;
+  }
+  freezeBtn.textContent = frozen ? '▶ 실시간 재개' : '⏸ 화면 일시정지';
+  freezeBtn.classList.toggle('freeze', frozen);
+  setStatus(frozen ? ' 화면 일시정지 · 지금 보이는 파형을 캡처하세요.' : ' 실시간 파형 관찰 중', true);
   render();
+};
+
+document.querySelectorAll('#durations button').forEach(btn => btn.onclick = () => {
+  const next = Number(btn.dataset.ms);
+  if(next === windowMs) return;
+  windowMs = next;
+  durationText.textContent = next===LONG_TOTAL_MS ? '0~20초' : '0~' + next + 'ms';
+  document.querySelectorAll('#durations button').forEach(x => x.setAttribute('aria-pressed', String(x===btn)));
+  if(running){
+    displayed = frozen ? (next===LONG_TOTAL_MS ? frozenLong : frozenShort) : (next===LONG_TOTAL_MS ? snapshotLong() : snapshotShort(next));
+    lastRefresh = 0;
+  }
+  setSize();
+  chartScroll.scrollLeft = 0;
 });
+
 document.getElementById('clear').onclick = () => {
   if(captures.length && !confirm('저장된 파형을 모두 삭제할까요?')) return;
   captures = [];
@@ -488,7 +621,6 @@ document.getElementById('clear').onclick = () => {
 };
 
 document.getElementById('save').onclick = () => {
-  // 저장 이미지에는 실시간 파형을 제외하고 캡처된 파형만 담습니다.
   render(false);
   canvas.toBlob(blob => {
     render();
